@@ -12,11 +12,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.Locale
 
 class MainActivity : AppCompatActivity() {
 
     //TODO (Refactor to replace Thread code with coroutines)
+
+
 
     private val cakeImageView: ImageView by lazy {
         findViewById(R.id.imageView)
@@ -26,12 +29,7 @@ class MainActivity : AppCompatActivity() {
         findViewById(R.id.currentTextView)
     }
 
-    val handler = Handler(Looper.getMainLooper(), Handler.Callback {
 
-        currentTextView.text = String.format(Locale.getDefault(), "Current opacity: %d", it.what)
-        cakeImageView.alpha = it.what / 100f
-        true
-    })
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,10 +37,13 @@ class MainActivity : AppCompatActivity() {
 
         findViewById<Button>(R.id.revealButton).setOnClickListener{
             val scope = CoroutineScope(Job()+Dispatchers.IO)
-
             scope.launch{
                 repeat(100){
-                    handler.sendEmptyMessage(it)
+                    withContext(Dispatchers.Main) {
+                        currentTextView.text =
+                            String.format(Locale.getDefault(), "Current opacity: %d", it)
+                        cakeImageView.alpha = it/100f
+                    }
                     delay(40)
                 }
             }
